@@ -7,7 +7,8 @@ from rest_framework.viewsets import ModelViewSet
 
 from applications.product.models import Product, Comment, Review, Like, Rating, Favourite
 from applications.product.permissions import IsCommentOwner, IsOwner, IsReviewOwner
-from applications.product.serializers import ProductSerializer, CommentSerializer, ReviewSerializer, RatingSerializer
+from applications.product.serializers import ProductSerializer, CommentSerializer, ReviewSerializer, RatingSerializer, \
+    FavouriteSerializer
 
 
 class LargeResultsSetPagination(PageNumberPagination):
@@ -44,16 +45,6 @@ class ProductAPIView(ModelViewSet):
         rating_obj.save()
         return Response(request.data)
 
-    @action(detail=True, methods=['POST'])
-    def favourite(self, request, pk, *args, **kwargs):  # post/id/like/
-        favourite_obj, _ = Favourite.objects.get_or_create(product_id=pk, owner=request.user)
-        favourite_obj.favourites = not favourite_obj.favourites
-        favourite_obj.save()
-        status = 'favourite'
-        if not favourite_obj.favourites:
-            status = 'not favourite'
-        return Response({'status': status})
-
 
 class CommentAPIView(ModelViewSet):
     queryset = Comment.objects.all()
@@ -81,3 +72,23 @@ class ReviewAPIView(ModelViewSet):
         queryset = super().get_queryset()
         queryset = queryset.filter(owner=self.request.user)
         return queryset
+
+
+class FavouriteAPIView(ModelViewSet):
+    queryset = Favourite.objects.all()
+    serializer_class = FavouriteSerializer
+
+    @action(detail=True, methods=['POST'])
+    def favourite(self, request, pk):
+        favourite_obj, _ = Favourite.objects.get_or_create(product_id=pk, owner=request.user)
+        favourite_obj.is_favourite = not favourite_obj.is_favourite
+        favourite_obj.save()
+        status = 'favourite'
+        if not favourite_obj.is_favourite:
+            status = 'not favourite'
+        return Response({'status': status})
+
+    @action(detail=False, methods=['GET'])
+    def get_favorite(self, request):
+        products = Favourite.objects.filter(owner=request.user, is_favourite=True)
+        return Response(products.data)

@@ -63,9 +63,7 @@ class Rating(models.Model):
 
 
 class Favourite(models.Model):
-    owner = models.ForeignKey(User, on_delete=models.CASCADE, related_name='favourites')
-    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='favourites')
-    favourites = models.BooleanField(default=False)
+    owner = models.ForeignKey(User, on_delete=models.CASCADE)
+    product = models.ForeignKey(Product, on_delete=models.CASCADE)
+    is_favourite = models.BooleanField(default=False)
 
-    def __str__(self):
-        return f'{self.owner}: {self.product}'

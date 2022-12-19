@@ -71,5 +71,4 @@ class ProductSerializer(serializers.ModelSerializer):
         rep = super().to_representation(instance)
         rep['likes'] = instance.likes.filter(like=True).count()
         rep['rating'] = instance.rating.all().aggregate(Avg('rating'))['rating__avg']
-        rep['favourites'] = instance.favourites.filter(favourites=True).count()
         return rep
